@@ -2745,7 +2745,7 @@ elif [[ "${welcomeDialog}" == "userInput" ]]; then
 
             # Asset Tag
             if [[ -n "${assetTag}" ]]; then
-                reconOptions+="-assetTag \"${assetTag}\" "
+                "$jamfBinary" recon -assetTag "$assetTag"
             fi
 
             # Real Name
@@ -2775,6 +2775,7 @@ elif [[ "${welcomeDialog}" == "userInput" ]]; then
             # Output `recon` options to log
             updateScriptLog "WELCOME DIALOG: reconOptions: ${reconOptions}"
 
+            
             ###
             # Display "Setup Your Mac" dialog (and capture Process ID)
             ###
