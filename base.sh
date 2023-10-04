@@ -90,7 +90,7 @@
 scriptVersion="1.12.10"
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 scriptLog="${4:-"/var/log/jamf.log"}"                        # Parameter 4: Script Log Location [ /var/log/org.churchofjesuschrist.log ] (i.e., Your organization's default location for client-side logs)
-debugMode="${5:-"false"}"                                                     # Parameter 5: Debug Mode [ verbose (default) | true | false ]
+debugMode="${5:-"verbose"}"                                                     # Parameter 5: Debug Mode [ verbose (default) | true | false ]
 welcomeDialog="${6:-"userInput"}"                                               # Parameter 6: Welcome dialog [ userInput (default) | video | messageOnly | false ]
 completionActionOption="${7:-"Restart Attended"}"                               # Parameter 7: Completion Action [ wait | sleep (with seconds) | Shut Down | Shut Down Attended | Shut Down Confirm | Restart | Restart Attended (default) | Restart Confirm | Log Out | Log Out Attended | Log Out Confirm ]
 requiredMinimumBuild="${8:-"disabled"}"                                         # Parameter 8: Required Minimum Build [ disabled (default) | 22E ] (i.e., Your organization's required minimum build of macOS to allow users to proceed; use "22E" for macOS 13.3)
@@ -118,14 +118,14 @@ failureDialog="true"        # Display the so-called "Failure" dialog (after the 
 promptForUsername="false"
 prefillUsername="true"          # prefills the currently logged in user's username
 promptForRealName="false"
-prefillRealname="false"          # prefills the currently logged in user's fullname
+prefillRealname="true"          # prefills the currently logged in user's fullname
 promptForEmail="false"
 promptForComputerName="true"
 promptForAssetTag="true"
 promptForRoom="false"
 promptForBuilding="false"
 promptForDepartment="false"
-promptForConfiguration="false"   # Removes the Configuration dropdown entirely and uses the "Catch-all (i.e., used when `welcomeDialog` is set to `video` or `false`)" or presetConfiguration policyJSON
+promptForConfiguration="true"   # Removes the Configuration dropdown entirely and uses the "Catch-all (i.e., used when `welcomeDialog` is set to `video` or `false`)" or presetConfiguration policyJSON
 
 # Set to "true" to suppress the Update Inventory option on policies that are called
 suppressReconOnPolicy="false"
@@ -322,16 +322,16 @@ University Store"
 departmentList=$( echo "${departmentListRaw}" | tr ',' '\n' | sort -f | uniq | sed -e 's/^/\"/' -e 's/$/\",/' -e '$ s/.$//' )
 
 # Branding overrides
-brandingBanner="file:///Users/evesc.guru/Downloads/8609213_5853.jpg"
+brandingBanner="https://imgs.search.brave.com/iYRyQ3Nm6LiaN2RuurlxwbO6qmOhvphe6FjOjqcP3Rg/rs:fit:500:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvZmVhdHVy/ZWQvY29vbC1ibHVl/LXRxNngzMmk1eTVz/dWFieGcuanBn"
 brandingBannerDisplayText="true"
 brandingIconLight="https://brightspotcdn.byui.edu/9f/96/22f358fd477b8dcc4a24f531117c/logobox-04.svg"
 brandingIconDark="https://brightspotcdn.byui.edu/9f/96/22f358fd477b8dcc4a24f531117c/logobox-04.svg"
 
 # IT Support Variables - Use these if the default text is fine but you want your org's info inserted instead
-supportTeamName="BYU-I Tier 3 Information Technology"
+supportTeamName="Tier 3 Information Technology"
 supportTeamPhone="+1 (208) 496-7146"
 supportTeamEmail=""
-supportKB="'Set-up Your Mac'"
+supportKB="Set-up your Mac error"
 supportTeamErrorKB=", and mention [KB8675309](https://servicenow.company.com/support?id=kb_article_view&sysparm_article=KB8675309#Failures)"
 supportTeamHelpKB="
 - **Knowledge Base Article:** KB8675309"
@@ -881,11 +881,11 @@ if [ "$promptForAssetTag" == "true" ]; then
     assetTagJSON='{   "title" : "Asset Tag",
         "required" : true,
         "prompt" : "Please enter the six-digit Asset Tag",
-        "regex" : "^[0-9]{6,}$",
+        "regex" : "[0-9]{6,}$",
         "regexerror" : "Please enter six digits for the Asset Tag."
     },'
 fi
-if [ "$promptForRoom" == "true" ]; then roomJSON='{ "title" : "Room","required" : true,"prompt" : "Enter room number" }'; fi
+if [ "$promptForRoom" == "true" ]; then roomJSON='{ "title" : "Room","required" : true,"prompt" : "Please enter room #" }'; fi
 
 textFieldJSON="${usernameJSON}${realNameJSON}${emailJSON}${compNameJSON}${assetTagJSON}${roomJSON}"
 textFieldJSON=$( echo ${textFieldJSON} | sed 's/,$//' )
@@ -909,7 +909,7 @@ if [ "$promptForDepartment" == "true" ]; then
     departmentJSON='{
             "title" : "Department",
             "default" : "",
-            "required" : false,
+            "required" : true,
             "values" : [
                 '${departmentList}'
             ]
@@ -962,7 +962,7 @@ welcomeJSON='
     "selectitems" : [
         '${selectItemsJSON}'
     ],
-    "height" : "860"
+    "height" : "750"
 }
 '
 
@@ -1103,7 +1103,7 @@ dialogSetupYourMacCMD="$dialogBinary \
 # The fully qualified domain name of the server which hosts your icons, including any required sub-directories
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## ## ## ## ## ## ## ## ## ## setupYourMacPolicyArrayIconPrefixUrl="https://ics.services.jamfcloud.com/icon/hash_"
+## setupYourMacPolicyArrayIconPrefixUrl="https://ics.services.jamfcloud.com/icon/hash_"
 
 
 
@@ -1115,113 +1115,107 @@ function policyJSONConfiguration() {
 
     outputLineNumberInVerboseDebugMode
 
-    updateScriptLog "WELCOME DIALOG: PolicyJSON Configuration: Testing"
+    updateScriptLog "WELCOME DIALOG: PolicyJSON Configuration: $symConfiguration"
 
     case ${symConfiguration} in
 
-        "Test Config" )
+        * ) # Catch-all )
 
             policyJSON='
             {
                 "steps": [
         
                     {
-                        "listitem": "1. Erase and Update OS (Ventura)",
-                        "icon": "https://use1.ics.services.jamfcloud.com/icon/hash_7e4bd5bc628f21400adcac9dd9b8606bc6b4a37fd8340144dae16d5a420a091b",
-                        "progresstext": "Processing policy: 1. Erase and Update OS (Ventura)",
+                        "listitem": "Randomize_admin_password",
+                        "icon": "",
+                        "progresstext": "Processing policy: Randomize_admin_password",
                         "trigger_list": [
                                          {
-                                            "trigger": "config1-ventura",
-                                            "validation": "None"
+                                            "trigger": "test-random",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "test-token",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "scramble",
+                                            "validation": "Remote"
                                          }
                         ]
                     },
                     {
-                        "listitem": "2. Set Computer Name",
-                        "icon": "https://use1.ics.services.jamfcloud.com/icon/hash_6054b520e2ecdb1f73bfc19c35b8946616b4d5620c36f866351a8196ad9fb5af",
-                        "progresstext": "This will allow you to change the Mac Computer Name.",
+                        "listitem": "Microsoft Office",
+                        "icon": "https://use1.ics.services.jamfcloud.com/icon/hash_83da6b3d556e204e29ae001157c96b2bd45b85d94ae6e6dd67669d3d3c7d542b",
+                        "progresstext": "Installs Microsoft Office 2022",
                         "trigger_list": [
                                          {
-                                            "trigger": "set-com-name",
-                                            "validation": "None"
+                                            "trigger": "install-office",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "install-unarchiver",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "install-vlc",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "install_javaruntime",
+                                            "validation": "Remote"
                                          }
                         ]
                     },
                     {
-                        "listitem": "3. Base Config",
-                        "icon": "https://use1.ics.services.jamfcloud.com/icon/hash_e97168d1c7a509e8a00f57a79a12784792b86d1e8b280dd43f773a3c3d5f53f1",
-                        "progresstext": "Processing policy: 3. Base Config",
+                        "listitem": "Adobe Creative Cloud (Shared Licensing)",
+                        "icon": "https://use1.ics.services.jamfcloud.com/icon/hash_ca0a9f1dbed091991975df63001abe4d6699cead33076d9136bdd9c99c32ca35",
+                        "progresstext": "This is to be put on computers that have recently been imaged or have had all adobe products uninstalled and removed.
+
+Once that has happened, proceed to installing the license. You can begin to install adobe apps AFTER this is installed. Then it will be correctly managed by the school under a shared license.
+
+",
                         "trigger_list": [
                                          {
-                                            "trigger": "base-config",
-                                            "validation": "None"
-                                         }
-                        ]
-                    }
-                ]
-            }
-            '
-            ;;
-
-    "Testing" )
-
-            policyJSON='
-            {
-                "steps": [
-        
-                    {
-                        "listitem": "Prusa Slicer 2.6.1",
-                        "icon": "",
-                        "progresstext": "Processing policy: Prusa Slicer 2.6.1",
-                        "trigger_list": [
+                                            "trigger": "adobecc",
+                                            "validation": "Remote"
+                                         },
                                          {
-                                            "trigger": "install-prusaSlicer2.6",
+                                            "trigger": "install-AdobeCameraRaw",
                                             "validation": "Remote"
                                          }
                         ]
-                    }
-                ]
-            }
-            '
-            ;;
-
-    "${configurationOneName}" )
-
-            policyJSON='
-            {
-                "steps": [
-        
+                    },
                     {
-                        "listitem": "Prusa Slicer 2.6.1",
+                        "listitem": "Add Regular Printers",
                         "icon": "",
-                        "progresstext": "Processing policy: Prusa Slicer 2.6.1",
+                        "progresstext": "Processing policy: Add Regular Printers",
                         "trigger_list": [
                                          {
-                                            "trigger": "install-prusaSlicer2.6",
-                                            "validation": "None"
-                                         }
-                        ]
-                    }
-                ]
-            }
-            '
-            ;;
-
-    * ) # Catch-all )
-
-            policyJSON='
-            {
-                "steps": [
-        
-                    {
-                        "listitem": "Prusa Slicer 2.6.1",
-                        "icon": "",
-                        "progresstext": "Processing policy: Prusa Slicer 2.6.1",
-                        "trigger_list": [
-                                         {
-                                            "trigger": "install-prusaSlicer2.6",
+                                            "trigger": "add-regular-printers",
                                             "validation": "Remote"
-                                         }
+                                         },
+                                         {
+                                            "trigger": "drop-bg",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "install-icommfonts",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "config-basicdock",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "r_click",
+                                            "validation": "Remote"
+                                         },
+                                         {
+                                            "trigger": "disable-autoupdate",
+                                            "validation": "Remote"
+                                         },
+                                         
                         ]
                     }
                 ]
