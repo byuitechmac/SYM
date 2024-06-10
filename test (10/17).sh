@@ -322,8 +322,8 @@ University Store"
 departmentList=$( echo "${departmentListRaw}" | tr ',' '\n' | sort -f | uniq | sed -e 's/^/\"/' -e 's/$/\",/' -e '$ s/.$//' )
 
 # Branding overrides
-brandingBanner="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD7WFxKHSBMpGZ0puwB4HQb9k9ZZIORFjr-yk5LmhnCXZn_U9mmvAzDB0pRBbF7Gc0x50&usqp=CAU"
-brandingBannerDisplayText="true"
+brandingBanner="https://raw.githubusercontent.com/Chloeves/Branding-Banner/main/Screenshot%202023-10-24%20at%208.50.09%20AM.png"
+brandingBannerDisplayText="false"
 brandingIconLight="https://brightspotcdn.byui.edu/9f/96/22f358fd477b8dcc4a24f531117c/logobox-04.svg"
 brandingIconDark="https://brightspotcdn.byui.edu/9f/96/22f358fd477b8dcc4a24f531117c/logobox-04.svg"
 
